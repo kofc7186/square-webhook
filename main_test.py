@@ -9,7 +9,6 @@ from hashlib import sha1
 import flask
 import pytest
 
-from google.auth import credentials
 from google.cloud import pubsub_v1
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed
 
@@ -107,7 +106,17 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
                                   headers={"X-Square-Signature": signature}):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
-        # TODO: subscribe to topic and ensure message matched what we wanted to send
+
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
+    subscriber.create_subscription(subscription_path,topic_name)
+
+    response = subscriber.pull(subscription_path,max_messages=1)
+
+    # TODO: ack message
     client.delete_topic(topic_name)
+
+    # ensure that what we sent over the webhook is what we got over pubsub
+    assert response.received_messages[0].message.data == content
 
 # TODO: test failure of pubsub call

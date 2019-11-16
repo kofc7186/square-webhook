@@ -29,10 +29,9 @@ jobs:
         pip install -r requirements.txt
     - name: Run pytest
       env:
-        PUBSUB_EMULATOR_HOST: localhost:${{ job.services.pubsub.ports['8538'] }}
+        PUBSUB_EMULATOR_HOST: 127.0.0.1:${{ job.services.pubsub.ports['8538'] }}
         PUBSUB_PROJECT_ID: square-webhook-123456
         GCP_PROJECT: square-webhook-123456
       run: |
-        (echo > /dev/tcp/localhost/${{ job.services.pubsub.ports['8538'] }}) >/dev/null 2>&1 && echo "It's up" || echo "It's down"
         pip install -q pytest
         pytest
