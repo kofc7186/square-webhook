@@ -8,6 +8,8 @@ from hashlib import sha1
 import flask
 import pytest
 
+from google.auth import credentials
+from google.cloud.pubsub_v1 import publisher
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed
 
 import main
