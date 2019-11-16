@@ -15,23 +15,24 @@ jobs:
         python-version: 3.7
     - name: Install dependencies
       run: |
-        sudo apt-get install -qy default-jre-headless
+        sudo apt-get -q install -y default-jre-headless
         echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-        sudo apt-get install -qy apt-transport-https ca-certificates
+        sudo apt-get -q install -y apt-transport-https ca-certificates
         curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-        sudo apt-get update -qy && sudo apt-get install -qy google-cloud-sdk google-cloud-sdk-pubsub-emulator
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        sudo apt-get -q update -y && sudo apt-get -q install -y google-cloud-sdk google-cloud-sdk-pubsub-emulator
+        python -m pip install -q --upgrade pip
+        pip install -q -r requirements.txt
     - name: Lint with flake8
       run: |
-        pip install flake8
+        pip install -q flake8
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pip install pytest
+        pip install -q pytest
+        gcloud config set project PUBSUB_PROJECT_ID
         gcloud beta emulators pubsub start --project=PUBSUB_PROJECT_ID &
         export EMULATOR_PID=$!
         $(gcloud beta emulators pubsub env-init)
