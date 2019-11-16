@@ -107,6 +107,7 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
                                   headers={"X-Square-Signature": signature}):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
+        # TODO: subscribe to topic and ensure message matched what we wanted to send
     client.delete_topic(topic_name)
 
 # TODO: test failure of pubsub call

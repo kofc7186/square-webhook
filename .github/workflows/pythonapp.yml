@@ -30,7 +30,10 @@ jobs:
     - name: Run pytest
       env:
         PUBSUB_EMULATOR_HOST: pubsub:8538
+        PUBSUB_PROJECT_ID: square-webhook-123456
         GCP_PROJECT: square-webhook-123456
       run: |
+        ping -c4 pubsub
+        (echo > /dev/tcp/pubsub/8538) >/dev/null 2>&1 \ && echo "It's up" || echo "It's down"
         pip install -q pytest
         pytest
