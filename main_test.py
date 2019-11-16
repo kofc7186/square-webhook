@@ -84,10 +84,10 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
             main.handle_webhook(flask.request)
             pytest.fail("KeyError: 'HTTP_X_SQUARE_SIGNATURE'")
 
-
+@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
 def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     client = pubsub_v1.PublisherClient()
-    topic_name = client.topic_path(os.environ["GCP_PROJECT"],"orders")
+    topic_name = "projects/{}/topics/{}".format(os.environ["GCP_PROJECT"],"orders")#client.topic_path(os.environ["GCP_PROJECT"],"orders")
     client.create_topic(topic_name)
     base_url = "functions.googlecloud.com"
     path = "/test_handle_webhook_valid"
@@ -107,10 +107,15 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
 
-    subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
-    subscriber.create_subscription(subscription_path,subscriber.topic_path(os.environ["GCP_PROJECT"],"orders"))
+    for topic in client.list_topics(os.environ["GCP_PROJECT"]):
+        print ("Topic: {}".format(topic))
 
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = "projects/{}/subscriptions/{}".format(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")#subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
+    subscriber.create_subscription(subscription_path,topic_name)#subscriber.topic_path(os.environ["GCP_PROJECT"],"orders"))
+
+    for sub in client.list_topic_subscriptions(topic_name):
+        print ("Subscription: {}".format(sub))
     response = subscriber.pull(subscription_path,max_messages=1)
     # ensure that what we sent over the webhook is what we got over pubsub
     print(len(response.received_messages))
