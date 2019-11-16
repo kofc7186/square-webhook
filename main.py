@@ -5,7 +5,7 @@ import os
 
 from hashlib import sha1
 from flask import Response
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed, InternalServerError
 
 from google.cloud import pubsub_v1
 
@@ -67,8 +67,11 @@ def handle_webhook(request):
             # this will block until the publish is complete;
             # or raise an exception if the publish fails which should trigger Square to
             # retry the notification
-            message_id = future.result(timeout=2)
-            return Response(message_id, status=200)
+            try:
+                message_id = future.result(timeout=2)
+                return Response(message_id, status=200)
+            except TimeoutError:
+                raise InternalServerError(description="Timeout publishing notification")
 
         raise BadRequest(description="JSON is invalid, or missing required property")
 
