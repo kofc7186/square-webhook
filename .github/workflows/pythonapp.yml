@@ -20,6 +20,8 @@ jobs:
         sudo apt-get install -y apt-transport-https ca-certificates
         curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
         sudo apt-get update -y && sudo apt-get install -y google-cloud-sdk google-cloud-sdk-pubsub-emulator
+        gcloud components install pubsub-emulator
+        gcloud components update
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Lint with flake8
@@ -32,4 +34,8 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
+        gcloud beta emulators pubsub start --project=PUBSUB_PROJECT_ID &
+        export EMULATOR_PID=$!
+        $(gcloud beta emulators pubsub env-init)
         pytest
+        kill -9 $EMULATOR_PID
