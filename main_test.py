@@ -112,11 +112,15 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     subscriber.create_subscription(subscription_path,topic_name)
 
     response = subscriber.pull(subscription_path,max_messages=1)
+    # ensure that what we sent over the webhook is what we got over pubsub
+    print(len(response.received_messages))
+    assert json.loads(response.received_messages[0].message.data) == content
 
-    # TODO: ack message
     client.delete_topic(topic_name)
 
-    # ensure that what we sent over the webhook is what we got over pubsub
-    assert response.received_messages[0].message.data == content
+    ack_ids = [msg.ack_id for msg in response.received_messages]
+    subscriber.acknowledge(subscription_path, ack_ids)
+    subscriber.delete_subscription(subscription_path)
+
 
 # TODO: test failure of pubsub call

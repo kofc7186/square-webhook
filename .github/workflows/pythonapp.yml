@@ -35,3 +35,11 @@ jobs:
       run: |
         pip install -q pytest
         pytest
+    - name: Run pytest.cov
+      env:
+        PUBSUB_EMULATOR_HOST: 127.0.0.1:${{ job.services.pubsub.ports['8085'] }}
+        PUBSUB_PROJECT_ID: square-webhook-123456
+        GCP_PROJECT: square-webhook-123456
+      run: |
+        pip install -q pytest-cov
+        pytest --cov=.
