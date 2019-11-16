@@ -42,4 +42,4 @@ jobs:
         GCP_PROJECT: square-webhook-123456
       run: |
         pip install -q pytest-cov
-        pytest --cov=.
+        pytest --cov=. --cov-report term-missing
