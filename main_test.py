@@ -3,13 +3,14 @@
 import base64
 import hmac
 import json
+import os
 from hashlib import sha1
 
 import flask
 import pytest
 
 from google.auth import credentials
-from google.cloud.pubsub_v1 import publisher
+from google.cloud import pubsub_v1
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed
 
 import main
@@ -86,6 +87,9 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
 
 
 def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
+    client = pubsub_v1.PublisherClient()
+    topic_name = "projects/{}/topics/orders".format(os.environ["GCP_PROJECT"])
+    client.create_topic(topic_name)
     base_url = "functions.googlecloud.com"
     path = "/test_handle_webhook_valid"
     content = {
@@ -103,6 +107,6 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
                                   headers={"X-Square-Signature": signature}):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
+    client.delete_topic(topic_name)
 
-# TODO: mock up pubsub
 # TODO: test failure of pubsub call

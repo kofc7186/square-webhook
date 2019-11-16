@@ -9,21 +9,22 @@ from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllow
 from google.cloud import pubsub_v1
 
 # only configure stackdriver logging when running on GCP
-if os.environ.get('GCP_PROJECT', None):
-    import google.cloud.logging
-    from google.cloud.logging.resource import Resource
-
-    log_client = google.cloud.logging.Client()
-    log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
-
-    # Inside the resource, nest the required labels specific to the resource type
-    res = Resource(type="cloud_function", labels={
-        "function_name": os.getenv('FUNCTION_NAME'),
-        "region": os.getenv('FUNCTION_REGION')
-        })
-    logger = log_client.logger(log_name.format("GCP_PROJECT"))
-else:
-    import logging
+#if os.environ.get('GCP_PROJECT', None):
+#    import google.cloud.logging
+#    from google.cloud.logging.resource import Resource
+#
+#    log_client = google.cloud.logging.Client()
+#    log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
+#
+#    # Inside the resource, nest the required labels specific to the resource type
+#    res = Resource(type="cloud_function", labels={
+#        "function_name": os.getenv('FUNCTION_NAME'),
+#        "region": os.getenv('FUNCTION_REGION')
+#        })
+#    logger = log_client.logger(log_name.format("GCP_PROJECT"))
+#else:
+#    import logging
+import logging
 
 
 def handle_webhook(request):
@@ -59,7 +60,7 @@ def handle_webhook(request):
 
             # put message on topic to upsert order
             publisher = pubsub_v1.PublisherClient()
-            topic_path = "projects/{}/topics/{}".format(os.environ["GCP_PROJECT_ID"], "orders")
+            topic_path = "projects/{}/topics/{}".format(os.environ["GCP_PROJECT"], "orders")
             future = publisher.publish(topic_path, data=request_json.encode('utf-8'))
 
             # this will block until the publish is complete;
