@@ -1,5 +1,6 @@
 import base64
 import hmac
+import json
 import os
 
 from hashlib import sha1
@@ -61,7 +62,7 @@ def handle_webhook(request):
             # put message on topic to upsert order
             publisher = pubsub_v1.PublisherClient()
             topic_path = "projects/{}/topics/{}".format(os.environ["GCP_PROJECT"], "orders")
-            future = publisher.publish(topic_path, data=request_json.encode('utf-8'))
+            future = publisher.publish(topic_path, data=json.dumps(request_json).encode('utf-8'))
 
             # this will block until the publish is complete;
             # or raise an exception if the publish fails which should trigger Square to
