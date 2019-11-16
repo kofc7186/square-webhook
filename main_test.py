@@ -31,22 +31,18 @@ def test_handle_webhook_empty_webhook_key(app, monkeypatch):
     with app.test_request_context(method='POST', json={}):
         with pytest.raises(KeyError):
             main.handle_webhook(flask.request)
-            pytest.fail("os.environ")
 
 
 def test_handle_webhook_invalid_method(app, mock_set_env_webhook_signature_key):
     with app.test_request_context(method='GET'):
         with pytest.raises(MethodNotAllowed):
             main.handle_webhook(flask.request)
-            pytest.fail("Invalid Method")
 
 
 def test_handle_webhook_invalid_signature(app, mock_set_env_webhook_signature_key):
-    base_url = "functions.googlecloud.com"
-    path = "/test_handle_webhook_valid"
     with app.test_request_context(method='POST',
-                                  path=path,
-                                  base_url=base_url,
+                                  path="/test_handle_webhook_valid",
+                                  base_url="functions.googlecloud.com",
                                   json={
                                       "merchant_id": "merchant",
                                       "location_id": "location",
@@ -55,21 +51,18 @@ def test_handle_webhook_invalid_signature(app, mock_set_env_webhook_signature_ke
                                   headers={"X-Square-Signature": "NOT_A_VALID_SIGNATURE"}):
         with pytest.raises(ValueError):
             main.handle_webhook(flask.request)
-            pytest.fail("Square Signature could not be verified")
 
 
 def test_handle_webhook_empty_json(app):
     with app.test_request_context(method='POST', content_type='application/json'):
         with pytest.raises(BadRequest):
             main.handle_webhook(flask.request)
-            pytest.fail("JSON is invalid, or missing required property")
 
 
 def test_handle_webhook_send_non_json(app):
     with app.test_request_context(method='POST', content_type='text/plain', data='abc123'):
         with pytest.raises(UnsupportedMediaType):
             main.handle_webhook(flask.request)
-            pytest.fail("JSON is invalid, or missing required property")
 
 
 def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signature_key):
@@ -82,13 +75,13 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
     with app.test_request_context(method='POST', json=content):
         with pytest.raises(KeyError):
             main.handle_webhook(flask.request)
-            pytest.fail("KeyError: 'HTTP_X_SQUARE_SIGNATURE'")
 
 @pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
 def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     client = pubsub_v1.PublisherClient()
-    topic_name = "projects/{}/topics/{}".format(os.environ["GCP_PROJECT"],"orders")#client.topic_path(os.environ["GCP_PROJECT"],"orders")
+    topic_name = "projects/{}/topics/{}".format(os.environ["GCP_PROJECT"],"orders")
     client.create_topic(topic_name)
+
     base_url = "functions.googlecloud.com"
     path = "/test_handle_webhook_valid"
     content = {
@@ -111,11 +104,11 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
         print ("Topic: {}".format(topic))
 
     subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = "projects/{}/subscriptions/{}".format(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")#subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
-    subscriber.create_subscription(subscription_path,topic_name)#subscriber.topic_path(os.environ["GCP_PROJECT"],"orders"))
+    subscription_path = "projects/{}/subscriptions/{}".format(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
+    subscriber.create_subscription(subscription_path,topic_name)
 
-    for sub in client.list_topic_subscriptions(topic_name):
-        print ("Subscription: {}".format(sub))
+#    for sub in client.list_topic_subscriptions(topic_name):
+#        print ("Subscription: {}".format(sub))
     response = subscriber.pull(subscription_path,max_messages=1)
     # ensure that what we sent over the webhook is what we got over pubsub
     print(len(response.received_messages))
