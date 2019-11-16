@@ -101,26 +101,19 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
 
-#    for topc in client.list_topics(os.environ["GCP_PROJECT"]):
-#        print ("Topic: {}".format(topc))
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
+    subscrip = subscriber.create_subscription(subscription_path,topic_name)
+    print ("Subscription: {}".format(subscrip))
 
-#    subscriber = pubsub_v1.SubscriberClient()
-#    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
-#    subscrip = subscriber.create_subscription(subscription_path,topic_name)
-#    print ("Subscription: {}".format(subscrip))
-
-#    for sub in client.list_topic_subscriptions(topic_name):
-#        print ("Subscription: {}".format(sub))
-#    response = subscriber.pull(subscription_path,max_messages=1)
+    response = subscriber.pull(subscription_path,max_messages=1)
     # ensure that what we sent over the webhook is what we got over pubsub
-#    print(len(response.received_messages))
-#    assert json.loads(response.received_messages[0].message.data) == content
+    print(len(response.received_messages))
+    assert json.loads(response.received_messages[0].message.data) == content
 
-#    client.delete_topic(topic_name)
-#
-#    ack_ids = [msg.ack_id for msg in response.received_messages]
-#    subscriber.acknowledge(subscription_path, ack_ids)
-#    subscriber.delete_subscription(subscription_path)
-#
+    ack_ids = [msg.ack_id for msg in response.received_messages]
+    subscriber.acknowledge(subscription_path, ack_ids)
+    subscriber.delete_subscription(subscription_path)
+    client.delete_topic(topic_name)
 
 # TODO: test failure of pubsub call
