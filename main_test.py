@@ -81,7 +81,7 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
 
 
 # TODO: test failure of pubsub call
-def mock_future_request(*args):
+def mock_future_request(**kwargs):
     raise exceptions.TimeoutError()
 
 @pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
