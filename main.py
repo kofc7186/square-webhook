@@ -66,7 +66,7 @@ def handle_webhook(request):
             # this will block until the publish is complete;
             # or raise an exception if the publish fails which should trigger Square to
             # retry the notification
-            message_id = future.result()
+            message_id = 'blocked'#future.result()
             return Response(message_id, status=200)
 
         raise BadRequest(description="JSON is invalid, or missing required property")
