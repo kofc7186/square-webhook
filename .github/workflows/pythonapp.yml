@@ -7,12 +7,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      pubsub:
+        image: bigtruedata/gcloud-pubsub-emulator
+        ports:
+          - 8538
+
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python 3.7
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Lint with flake8
       run: |
         pip install -q flake8
@@ -22,20 +28,8 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install dependencies
       run: |
-        sudo apt-get -q install -y default-jre-headless
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-        sudo apt-get -q install -y apt-transport-https ca-certificates
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-        sudo apt-get -q update -y && sudo apt-get -q install -y google-cloud-sdk google-cloud-sdk-pubsub-emulator
         python -m pip install -q --upgrade pip
         pip install -q -r requirements.txt
-    - name: Start PubSub Emulator
-      run: |
-        # the project string below needs to be formatted as a real project ID, but does not need to correspond to an actual one
-        gcloud config set project my-sample-project-191923
-        gcloud beta emulators pubsub start --project=my-sample-project-191923 &
-        export EMULATOR_PID=$!
-        $(gcloud beta emulators pubsub env-init)
     - name: Run pytest
       run: |
         pip install -q pytest
