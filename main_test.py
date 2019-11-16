@@ -8,9 +8,12 @@ from hashlib import sha1
 
 import flask
 import pytest
+from unittest import mock
 
+from google.auth import credentials
 from google.cloud import pubsub_v1
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed
+from google.cloud.pubsub_v1.publisher import exceptions
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed, InternalServerError
 
 import main
 
@@ -76,6 +79,34 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
         with pytest.raises(KeyError):
             main.handle_webhook(flask.request)
 
+
+# TODO: test failure of pubsub call
+def mock_future_request():
+    raise exceptions.TimeoutError()
+
+@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
+def test_handle_webhook_publish_timeout(app, monkeypatch, mock_set_env_webhook_signature_key):
+    base_url = "functions.googlecloud.com"
+    path = "/test_handle_webhook_valid"
+    content = {
+        "merchant_id": "merchant",
+        "location_id": "location",
+        "event_type": "event",
+        "entity_id": "entity"
+    }
+    to_sign = "://" + base_url + path + json.dumps(content, sort_keys=True)
+    signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
+    with app.test_request_context(method='POST',
+                                  path=path,
+                                  base_url=base_url,
+                                  json=content,
+                                  headers={"X-Square-Signature": signature}):
+        with pytest.raises(InternalServerError):
+            #monkeypatch.setattr(pubsub_v1, "publisher", mock_creds)
+            monkeypatch.setattr(pubsub_v1.publisher.futures.Future,"result",mock_future_request)
+            main.handle_webhook(flask.request)
+
+
 @pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
 def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     client = pubsub_v1.PublisherClient()
@@ -109,12 +140,9 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
 
         response = subscriber.pull(subscription_path,max_messages=1)
         # ensure that what we sent over the webhook is what we got over pubsub
-        print(len(response.received_messages))
         assert json.loads(response.received_messages[0].message.data) == content
 
         ack_ids = [msg.ack_id for msg in response.received_messages]
         subscriber.acknowledge(subscription_path, ack_ids)
     subscriber.delete_subscription(subscription_path)
     client.delete_topic(topic_name)
-
-# TODO: test failure of pubsub call
