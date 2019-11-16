@@ -106,10 +106,11 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
                                   headers={"X-Square-Signature": signature}):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
+        print("http response content: {}".format(res.data))
 
     subscriber = pubsub_v1.SubscriberClient()
     subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
-    subscriber.create_subscription(subscription_path,topic_name)
+    subscriber.create_subscription(subscription_path,subscriber.create_topic(os.environ["GCP_PROJECT"],"orders"))
 
     response = subscriber.pull(subscription_path,max_messages=1)
     # ensure that what we sent over the webhook is what we got over pubsub
