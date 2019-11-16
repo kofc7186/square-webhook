@@ -82,6 +82,12 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     topic_name = client.topic_path(os.environ["GCP_PROJECT"],"orders")
     topic = client.create_topic(topic_name)
     print ("Created topic: {}".format(topic))
+    
+    # must create subscription before message is sent
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
+    subscrip = subscriber.create_subscription(subscription_path,topic_name)
+    print ("Subscription: {}".format(subscrip))
 
     base_url = "functions.googlecloud.com"
     path = "/test_handle_webhook_valid"
@@ -101,18 +107,13 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
 
-    subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
-    subscrip = subscriber.create_subscription(subscription_path,topic_name)
-    print ("Subscription: {}".format(subscrip))
+        response = subscriber.pull(subscription_path,max_messages=1)
+        # ensure that what we sent over the webhook is what we got over pubsub
+        print(len(response.received_messages))
+        assert json.loads(response.received_messages[0].message.data) == content
 
-    response = subscriber.pull(subscription_path,max_messages=1)
-    # ensure that what we sent over the webhook is what we got over pubsub
-    print(len(response.received_messages))
-    assert json.loads(response.received_messages[0].message.data) == content
-
-    ack_ids = [msg.ack_id for msg in response.received_messages]
-    subscriber.acknowledge(subscription_path, ack_ids)
+        ack_ids = [msg.ack_id for msg in response.received_messages]
+        subscriber.acknowledge(subscription_path, ack_ids)
     subscriber.delete_subscription(subscription_path)
     client.delete_topic(topic_name)
 
