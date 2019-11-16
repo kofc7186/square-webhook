@@ -76,7 +76,7 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
         with pytest.raises(KeyError):
             main.handle_webhook(flask.request)
 
-@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
+#@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
 def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     client = pubsub_v1.PublisherClient()
     topic_name = client.topic_path(os.environ["GCP_PROJECT"],"orders")
