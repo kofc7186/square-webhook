@@ -29,13 +29,15 @@ jobs:
         sudo apt-get -q update -y && sudo apt-get -q install -y google-cloud-sdk google-cloud-sdk-pubsub-emulator
         python -m pip install -q --upgrade pip
         pip install -q -r requirements.txt
-    - name: Test with pytest
+    - name: Start PubSub Emulator
       run: |
-        pip install -q pytest
         # the project string below needs to be formatted as a real project ID, but does not need to correspond to an actual one
         gcloud config set project my-sample-project-191923
         gcloud beta emulators pubsub start --project=my-sample-project-191923 &
         export EMULATOR_PID=$!
         $(gcloud beta emulators pubsub env-init)
+    - name: Run pytest
+      run: |
+        pip install -q pytest
         pytest
         kill -9 $EMULATOR_PID
