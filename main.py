@@ -70,7 +70,7 @@ def handle_webhook(request):
             try:
                 message_id = future.result(timeout=2)
                 return Response(message_id, status=200)
-            except TimeoutError:
+            except pubsub_v1.publisher.exceptions.TimeoutError:
                 raise InternalServerError(description="Timeout publishing notification")
 
         raise BadRequest(description="JSON is invalid, or missing required property")
