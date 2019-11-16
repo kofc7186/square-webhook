@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name,unused-argument
+# pylint: disable=redefined-outer-name,unused-argument,no-member
 
 import base64
 import hmac
@@ -8,12 +8,11 @@ from hashlib import sha1
 
 import flask
 import pytest
-from unittest import mock
 
-from google.auth import credentials
 from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1.publisher import exceptions
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed, InternalServerError
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed, \
+    InternalServerError
 
 import main
 
@@ -80,11 +79,11 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
             main.handle_webhook(flask.request)
 
 
-# TODO: test failure of pubsub call
 def mock_future_request(*args, **kwargs):
     raise exceptions.TimeoutError()
 
-@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
+@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None,
+                    reason="Requires pubsub emulator to run")
 def test_handle_webhook_publish_timeout(app, monkeypatch, mock_set_env_webhook_signature_key):
     base_url = "functions.googlecloud.com"
     path = "/test_handle_webhook_valid"
@@ -102,23 +101,22 @@ def test_handle_webhook_publish_timeout(app, monkeypatch, mock_set_env_webhook_s
                                   json=content,
                                   headers={"X-Square-Signature": signature}):
         with pytest.raises(InternalServerError):
-            #monkeypatch.setattr(pubsub_v1, "publisher", mock_creds)
-            monkeypatch.setattr(pubsub_v1.publisher.futures.Future,"result",mock_future_request)
+            monkeypatch.setattr(pubsub_v1.publisher.futures.Future, "result", mock_future_request)
             main.handle_webhook(flask.request)
 
 
-@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None, reason="Requires pubsub emulator to run")
+@pytest.mark.skipif(os.environ.get("GITHUB_ACTION", None) is None,
+                    reason="Requires pubsub emulator to run")
 def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
     client = pubsub_v1.PublisherClient()
-    topic_name = client.topic_path(os.environ["GCP_PROJECT"],"orders")
-    topic = client.create_topic(topic_name)
-    print ("Created topic: {}".format(topic))
-    
+    topic_name = client.topic_path(os.environ["GCP_PROJECT"], "orders")
+    client.create_topic(topic_name)
+
     # must create subscription before message is sent
     subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],"test_handle_webhook_valid")
-    subscrip = subscriber.create_subscription(subscription_path,topic_name)
-    print ("Subscription: {}".format(subscrip))
+    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],
+                                                     "test_handle_webhook_valid")
+    subscriber.create_subscription(subscription_path, topic_name)
 
     base_url = "functions.googlecloud.com"
     path = "/test_handle_webhook_valid"
@@ -138,7 +136,7 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
 
-        response = subscriber.pull(subscription_path,max_messages=1)
+        response = subscriber.pull(subscription_path, max_messages=1)
         # ensure that what we sent over the webhook is what we got over pubsub
         assert json.loads(response.received_messages[0].message.data) == content
 

@@ -1,3 +1,5 @@
+# pylint: disable=redefined-outer-name,unused-argument,no-member
+
 import base64
 import hmac
 import json
@@ -5,7 +7,8 @@ import os
 
 from hashlib import sha1
 from flask import Response
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed, InternalServerError
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllowed, \
+    InternalServerError
 
 from google.cloud import pubsub_v1
 
@@ -72,6 +75,8 @@ def handle_webhook(request):
                 return Response(message_id, status=200)
             except pubsub_v1.publisher.exceptions.TimeoutError:
                 raise InternalServerError(description="Timeout publishing notification")
+            except:
+                raise InternalServerError(description="Unknown error")
 
         raise BadRequest(description="JSON is invalid, or missing required property")
 
