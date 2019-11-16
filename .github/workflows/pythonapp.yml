@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     services:
       pubsub:
-        image: bigtruedata/gcloud-pubsub-emulator
+        image: knarz/pubsub-emulator
         ports:
-          - 8538/tcp
+          - 8085/tcp
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python 3.8
@@ -29,7 +29,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run pytest
       env:
-        PUBSUB_EMULATOR_HOST: 127.0.0.1:${{ job.services.pubsub.ports['8538'] }}
+        PUBSUB_EMULATOR_HOST: 127.0.0.1:${{ job.services.pubsub.ports['8085'] }}
         PUBSUB_PROJECT_ID: square-webhook-123456
         GCP_PROJECT: square-webhook-123456
       run: |
