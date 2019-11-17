@@ -44,6 +44,7 @@ def handle_webhook(request):
     content_type = request.headers['content-type']
     if content_type == 'application/json':
         request_json = request.get_json(silent=False)
+        logging.debug(msg="notification content from webhook", data=request_json)
         # ensure the request is signed as coming from Square
         try:
             validate_square_signature(request)
@@ -54,8 +55,6 @@ def handle_webhook(request):
                                                     "location_id",
                                                     "event_type",
                                                     "entity_id"}:
-            logging.debug(msg="notification content from webhook", data=request_json)
-
             # put message on topic to upsert order
             publisher = pubsub_v1.PublisherClient()
             topic_path = publisher.topic_path(os.environ["GCP_PROJECT"], "orders")
