@@ -13,7 +13,7 @@ jobs:
       - name: Set up gcloud SDK
         uses: actions-hub/gcloud@master
         env:
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
           args: components update
@@ -27,7 +27,7 @@ jobs:
       - name: Deploy function with an HTTP trigger
         uses: actions-hub/gcloud@master
         env:
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
           args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python37 --trigger-http --allow-unauthenticated
@@ -35,7 +35,7 @@ jobs:
       - name: Deploy function with an HTTP trigger
         uses: actions-hub/gcloud@master
         env:
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
           args: functions describe handle_webhook
