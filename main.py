@@ -12,23 +12,14 @@ from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllow
 
 from google.cloud import pubsub_v1
 
+
 # only configure stackdriver logging when running on GCP
-#if os.environ.get('GCP_PROJECT', None):
-#    import google.cloud.logging
-#    from google.cloud.logging.resource import Resource
-#
-#    log_client = google.cloud.logging.Client()
-#    log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
-#
-#    # Inside the resource, nest the required labels specific to the resource type
-#    res = Resource(type="cloud_function", labels={
-#        "function_name": os.getenv('FUNCTION_NAME'),
-#        "region": os.getenv('FUNCTION_REGION')
-#        })
-#    logger = log_client.logger(log_name.format("GCP_PROJECT"))
-#else:
-#    import logging
-import logging
+if os.environ.get('GCP_PROJECT', None):
+    from google.cloud import logging as cloudlogging
+import logging #pylint: disable=wrong-import-position,wrong-import-order
+if os.environ.get('GCP_PROJECT', None):
+    LG_CLIENT = cloudlogging.Client()
+    LG_CLIENT.setup_logging(log_level=logging.INFO)
 
 
 def handle_webhook(request):
@@ -109,4 +100,3 @@ def validate_square_signature(request):
     if not hmac.compare_digest(string_signature, request.headers['X-Square-Signature']):
         raise ValueError("Square Signature could not be verified")
     return True
-

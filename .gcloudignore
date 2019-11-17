@@ -1,0 +1,9 @@
+.git/
+.github/
+.pytest_cache/
+.vscode/
+__pycache__/
+.coverage
+.gitignore
+main_test.py
+LICENSE
