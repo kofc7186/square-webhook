@@ -90,6 +90,7 @@ def validate_square_signature(request):
     The X-Square-Signature HTTP request header specifies the signed digest provided by Square,
     which should match what is calculated in this method.
     """
+
     key = os.environ['SQUARE_WEBHOOK_SIGNATURE_KEY']
     string_to_sign = request.url.encode() + request.data
 
@@ -105,3 +106,4 @@ def validate_square_signature(request):
     if not hmac.compare_digest(string_signature, request.headers['X-Square-Signature']):
         raise ValueError("Square Signature could not be verified")
     return True
+
