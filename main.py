@@ -12,6 +12,9 @@ from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllow
 
 from google.cloud import pubsub_v1
 
+# TODO: logging during CI
+# TODO: CD scripts to deploy on merge to main (create topic, function (delete old stuff?))
+
 # only configure stackdriver logging when running on GCP
 #if os.environ.get('GCP_PROJECT', None):
 #    import google.cloud.logging

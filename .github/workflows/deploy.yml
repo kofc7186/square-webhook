@@ -1,0 +1,41 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches:
+      - master
+    jobs:
+      deploy:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v1
+
+        - name: Set up gcloud SDK
+          uses: actions-hub/gcloud@master
+          env:
+            PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+            APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          with:
+            args: components update
+
+        - name: Export environment variables to yaml file
+          env:
+            SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+          run: |
+            echo "SQUARE_WEBHOOK_SIGNATURE_KEY: ${SQUARE_WEBHOOK_SIGNATURE_KEY}" > .env.yaml
+
+        - name: Deploy function with an HTTP trigger
+          uses: actions-hub/gcloud@master
+          env:
+            PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+            APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          with:
+            args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python37 --trigger-http --allow-unauthenticated
+
+        - name: Deploy function with an HTTP trigger
+          uses: actions-hub/gcloud@master
+          env:
+            PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+            APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          with:
+            args: functions describe handle_webhook
