@@ -51,7 +51,7 @@ def test_handle_webhook_invalid_signature(app, mock_set_env_webhook_signature_ke
                                       "event_type": "event",
                                       "entity_id": "entity"},
                                   headers={"X-Square-Signature": "NOT_A_VALID_SIGNATURE"}):
-        with pytest.raises(ValueError):
+        with pytest.raises(BadRequest):
             main.handle_webhook(flask.request)
 
 
