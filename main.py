@@ -14,10 +14,10 @@ from google.cloud import pubsub_v1
 
 
 # only configure stackdriver logging when running on GCP
-if os.environ.get('GCP_PROJECT', None):
+if os.environ.get('FUNCTION_NAME', None):
     from google.cloud import logging as cloudlogging
 import logging #pylint: disable=wrong-import-position,wrong-import-order
-if os.environ.get('GCP_PROJECT', None):
+if os.environ.get('FUNCTION_NAME', None):
     LG_CLIENT = cloudlogging.Client()
     LG_CLIENT.setup_logging(log_level=logging.INFO)
 
