@@ -54,7 +54,10 @@ def handle_webhook(request):
     if content_type == 'application/json':
         request_json = request.get_json(silent=False)
         # ensure the request is signed as coming from Square
-        validate_square_signature(request)
+        try:
+            validate_square_signature(request)
+        except ValueError:
+            raise BadRequest(description="Signature could not be validated")
 
         if request_json and request_json.keys() >= {"merchant_id",
                                                     "location_id",
