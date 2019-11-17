@@ -61,25 +61,6 @@ def test_handle_webhook_empty_json(app):
             main.handle_webhook(flask.request)
 
 
-def test_handle_webhook_incomplete_json(app, mock_set_env_webhook_signature_key):
-    base_url = "functions.googlecloud.com"
-    path = "/test_handle_webhook_valid"
-    incomplete_content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "entity_id": "entity"
-    }
-    to_sign = "://" + base_url + path + json.dumps(incomplete_content, sort_keys=True)
-    signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
-    with app.test_request_context(method='POST',
-                                  path=path,
-                                  base_url=base_url,
-                                  json=incomplete_content,
-                                  headers={"X-Square-Signature": signature}):
-        with pytest.raises(BadRequest):
-            main.handle_webhook(flask.request)
-
-
 def test_handle_webhook_send_non_json(app):
     with app.test_request_context(method='POST', content_type='text/plain', data='abc123'):
         with pytest.raises(UnsupportedMediaType):
@@ -163,3 +144,4 @@ def test_handle_webhook_valid(app, mock_set_env_webhook_signature_key):
         subscriber.acknowledge(subscription_path, ack_ids)
     subscriber.delete_subscription(subscription_path)
     client.delete_topic(topic_name)
+
