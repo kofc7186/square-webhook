@@ -30,6 +30,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
+# TODO: because this is in 'docker run', we need to figure out the conditional create topic if the topic isn't present
           args: pubsub topics list --filter=name:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
 
       - name: Deploy function with an HTTP trigger

@@ -45,7 +45,7 @@ def handle_webhook(request):
     content_type = request.headers['content-type']
     if content_type == 'application/json':
         request_json = request.get_json(silent=False)
-        logger.info("notification content from webhook: %s",json.dumps(request_json))
+
         # ensure the request is signed as coming from Square
         try:
             validate_square_signature(request)
@@ -86,12 +86,10 @@ def validate_square_signature(request):
     """
 
     key = os.environ['SQUARE_WEBHOOK_SIGNATURE_KEY']
+    # cloud functions does not set flaskRequest.url with the correct values so we have to munge it
     url = request.url.replace("http","https").rstrip('/') + '/' + os.environ['FUNCTION_NAME']
 
     string_to_sign = url.encode() + request.data
-
-    logger.info("url: %s", url)
-    logger.info("data: %s", str(request.data))
 
     # Generate the HMAC-SHA1 signature of the string, signed with your webhook signature key
     string_signature = str(base64.b64encode(hmac.new(key.encode(),
@@ -102,7 +100,6 @@ def validate_square_signature(request):
     string_signature = string_signature.rstrip('\n')
 
     # Compare your generated signature with the signature included in the request
-    logging.info("header signature: %s\ncomputed signature: %s", request.headers['X-Square-Signature'], string_signature)
     if not hmac.compare_digest(string_signature, request.headers['X-Square-Signature']):
         raise ValueError("Square Signature could not be verified")
     return True
