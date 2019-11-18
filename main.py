@@ -86,6 +86,7 @@ def validate_square_signature(request):
     """
 
     key = os.environ['SQUARE_WEBHOOK_SIGNATURE_KEY']
+    logger.info("signature key env var: %s", key)
     string_to_sign = request.url.encode() + request.data
 
     # Generate the HMAC-SHA1 signature of the string, signed with your webhook signature key
@@ -97,6 +98,7 @@ def validate_square_signature(request):
     string_signature = string_signature.rstrip('\n')
 
     # Compare your generated signature with the signature included in the request
+    logging.info("header signature: %s\ncomputed signature: %s", request.headers['X-Square-Signature'], string_signature)
     if not hmac.compare_digest(string_signature, request.headers['X-Square-Signature']):
         raise ValueError("Square Signature could not be verified")
     return True
