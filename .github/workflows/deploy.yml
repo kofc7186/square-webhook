@@ -24,14 +24,23 @@ jobs:
         run: |
           echo "SQUARE_WEBHOOK_SIGNATURE_KEY: ${SQUARE_WEBHOOK_SIGNATURE_KEY}" > .env.yaml
 
-      - name: Ensure topic is created for pubsub if it doesn't exist already
+      - name: Ensure topic exists for pubsub
         uses: actions-hub/gcloud@master
         env:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
-# TODO: because this is in 'docker run', we need to figure out the conditional create topic if the topic isn't present
-          args: pubsub topics list --filter=name:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
+          # gcloud returns 0 exit code regardless to whether it successfully finds the topic so we add the grep command
+          args: pubsub topics list --filter=name:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders --format=config | grep projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
+
+      - name: Create topic for pubsub
+        if: failure() # only runs if last step failed
+        uses: actions-hub/gcloud@master
+        env:
+          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
+          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        with:
+          args: pubsub topics create projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
 
       - name: Deploy function with an HTTP trigger
         uses: actions-hub/gcloud@master
@@ -39,4 +48,4 @@ jobs:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
-          args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python37 --trigger-http --allow-unauthenticated
+          args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python37 --trigger-http --allow-unauthenticated --memory=128MB
