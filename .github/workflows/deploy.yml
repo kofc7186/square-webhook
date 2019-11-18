@@ -30,7 +30,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
-          args: pubsub topics list --filter=topicId:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
+          args: pubsub topics list --filter=name:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
 
       - name: Deploy function with an HTTP trigger
         uses: actions-hub/gcloud@master
