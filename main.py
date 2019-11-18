@@ -86,7 +86,7 @@ def validate_square_signature(request):
     """
 
     key = os.environ['SQUARE_WEBHOOK_SIGNATURE_KEY']
-    url = request.url.replace("http","https") + os.environ['FUNCTION_NAME']
+    url = request.url.replace("http","https").rstrip('/') + '/' + os.environ['FUNCTION_NAME']
 
     string_to_sign = url.encode() + request.data
 
