@@ -3,6 +3,7 @@
 import base64
 import hmac
 import json
+import logging
 import os
 
 from hashlib import sha1
@@ -12,15 +13,15 @@ from werkzeug.exceptions import BadRequest, UnsupportedMediaType, MethodNotAllow
 
 from google.cloud import pubsub_v1
 
+logger = logging.getLogger(__name__)
 
 # only configure stackdriver logging when running on GCP
 if os.environ.get('FUNCTION_NAME', None):
     from google.cloud import logging as cloudlogging
-import logging #pylint: disable=wrong-import-position,wrong-import-order
-if os.environ.get('FUNCTION_NAME', None):
-    LG_CLIENT = cloudlogging.Client()
-    LG_CLIENT.setup_logging(log_level=logging.INFO)
-
+    LOG_CLIENT = cloudlogging.Client()
+    HANDLER = LOG_CLIENT.get_default_handler()
+    CLOUD_LOGGER = logging.getLogger("cloudLogger")
+    CLOUD_LOGGER.addHandler(HANDLER)
 
 def handle_webhook(request):
     """ Validates that the webhook came from Square and triggers the order creation process.
@@ -32,19 +33,19 @@ def handle_webhook(request):
         raise MethodNotAllowed(valid_methods="POST")
 
     if 'Square-Initial-Delivery-Timestamp' in request.headers:
-        logging.debug("Delivery time of initial notification: %s",
-                      request.headers['Square-Initial-Delivery-Timestamp'])
+        logger.debug("Delivery time of initial notification: %s",
+                    request.headers['Square-Initial-Delivery-Timestamp'])
 
     if 'Square-Retry-Number' in request.headers:
-        logging.warning("Square has resent this notification %s times; "
-                        "reason given for the last failure is '%s'",
+        logger.debug("Square has resent this notification %s times; "
+                     "reason given for the last failure is '%s'",
                         request.headers['Square-Retry-Number'],
                         request.headers['Square-Retry-Reason'])
 
     content_type = request.headers['content-type']
     if content_type == 'application/json':
         request_json = request.get_json(silent=False)
-        logging.debug(msg="notification content from webhook", data=request_json)
+        logger.info("notification content from webhook: %s",json.dumps(request_json))
         # ensure the request is signed as coming from Square
         try:
             validate_square_signature(request)
