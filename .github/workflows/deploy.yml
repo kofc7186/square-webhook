@@ -31,7 +31,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
-          args: pubsub topics list --filter=name:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders --format="value(name)" > /tmp/val
+          args: pubsub topics list --filter=name:projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders --format="value\(name\)" > /tmp/val
 
       - name: Export topic (if found)
         shell: bash
