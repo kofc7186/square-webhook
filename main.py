@@ -16,7 +16,7 @@ from google.cloud import pubsub_v1
 logger = logging.getLogger(__name__)
 
 # only configure stackdriver logging when running on GCP
-if os.environ.get('FUNCTION_NAME', None):
+if os.environ.get('FUNCTION_REGION', None):
     from google.cloud import logging as cloudlogging
     LOG_CLIENT = cloudlogging.Client()
     HANDLER = LOG_CLIENT.get_default_handler()
@@ -87,10 +87,12 @@ def validate_square_signature(request):
 
     key = os.environ['SQUARE_WEBHOOK_SIGNATURE_KEY']
     logger.info("signature key env var: %s", key)
-    string_to_sign = request.url.encode() + request.data
+    url = request.url.replace("http","https") + "/" + os.environ['FUNCTION_NAME']
 
-    logger.info("url: %s",request.url)
-    logger.info("data: %s",str(request.data))
+    string_to_sign = url.encode() + request.data
+
+    logger.info("url: %s", url)
+    logger.info("data: %s", str(request.data))
 
     # Generate the HMAC-SHA1 signature of the string, signed with your webhook signature key
     string_signature = str(base64.b64encode(hmac.new(key.encode(),
