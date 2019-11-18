@@ -89,6 +89,9 @@ def validate_square_signature(request):
     logger.info("signature key env var: %s", key)
     string_to_sign = request.url.encode() + request.data
 
+    logger.info("url: %s",request.url)
+    logger.info("data: %s",str(request.data))
+
     # Generate the HMAC-SHA1 signature of the string, signed with your webhook signature key
     string_signature = str(base64.b64encode(hmac.new(key.encode(),
                                                      string_to_sign,
