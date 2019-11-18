@@ -40,7 +40,7 @@ jobs:
 
       - name: Create topic for pubsub
         # step only runs if output from topicList was blank
-        if: steps.topic_export.outputs.topic != 'projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders'
+        if: steps.topic_export.outputs.topic == ''
         uses: actions-hub/gcloud@master
         env:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
