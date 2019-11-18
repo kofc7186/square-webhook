@@ -26,6 +26,7 @@ jobs:
 
       - name: Ensure topic exists for pubsub
         uses: actions-hub/gcloud@master
+        continue-on-error: true
         env:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
