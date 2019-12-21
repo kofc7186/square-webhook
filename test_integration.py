@@ -72,8 +72,8 @@ def test_handle_webhook_publish_timeout(app, mocker, mock_setup):
                                   json=content,
                                   headers={"X-Square-Signature": signature}):
         with pytest.raises(InternalServerError):
-            mocker.patch.object(pubsub_v1.publisher.futures.Future,"result",
-                         side_effect=exceptions.TimeoutError())
+            mocker.patch.object(pubsub_v1.publisher.futures.Future, "result",
+                                side_effect=exceptions.TimeoutError())
             main.handle_webhook(flask.request)
 
 

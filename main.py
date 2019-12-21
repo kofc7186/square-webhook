@@ -94,7 +94,7 @@ def validate_square_signature(request):
 
     # Generate the HMAC-SHA1 signature of the string, signed with your webhook signature key
     string_signature = str(base64.b64encode(hmac.new(key.encode(), string_to_sign, sha1).digest()),
-                                                     'utf-8')
+                           'utf-8')
 
     # Remove the trailing newline from the generated signature
     string_signature = string_signature.rstrip('\n')
