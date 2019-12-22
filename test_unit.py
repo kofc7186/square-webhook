@@ -81,7 +81,7 @@ def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signat
 @pytest.fixture
 def mock_pubsub_calls(mocker):
     mock_client = mocker.patch('google.cloud.pubsub_v1.PublisherClient', autospec=True)
-    mock_client.return_value.publish.return_value.result.return_value="message_id"
+    mock_client.return_value.publish.return_value.result.return_value = "message_id"
     return mock_client
 
 
@@ -102,7 +102,7 @@ def test_good_message(app, mock_pubsub_calls, mock_set_env_webhook_signature_key
                                   path="/test_handle_webhook_valid",
                                   base_url="functions.googlecloud.com",
                                   json=content,
-                                  headers={'X-Square-Signature':signature}):
+                                  headers={'X-Square-Signature': signature}):
         response = main.handle_webhook(flask.request)
 
     assert response.status_code == 200
@@ -129,7 +129,7 @@ def test_good_message_retry(app, mock_pubsub_calls, mock_set_env_webhook_signatu
                                   json=content,
                                   headers={
                                       'X-Square-Signature': signature,
-                                      'Square-Initial-Delivery-Timestamp': \
+                                      'Square-Initial-Delivery-Timestamp':
                                           datetime.datetime.utcnow().isoformat("T") + "Z",
                                       'Square-Retry-Number': 1,
                                       'Square-Retry-Reason': "500 Internal Server Error",
@@ -158,8 +158,8 @@ def test_good_message_publish_timeout(app, mock_pubsub_calls, mock_set_env_webho
                                   path="/test_handle_webhook_valid",
                                   base_url="functions.googlecloud.com",
                                   json=content,
-                                  headers={'X-Square-Signature':signature}):
-        mock_pubsub_calls.return_value.publish.return_value.result.side_effect=\
+                                  headers={'X-Square-Signature': signature}):
+        mock_pubsub_calls.return_value.publish.return_value.result.side_effect = \
             pubsub_v1.publisher.exceptions.TimeoutError
         with pytest.raises(InternalServerError):
             main.handle_webhook(flask.request)
@@ -185,13 +185,12 @@ def test_good_message_publish_unknown_error(app, mock_pubsub_calls,
                                   path="/test_handle_webhook_valid",
                                   base_url="functions.googlecloud.com",
                                   json=content,
-                                  headers={'X-Square-Signature':signature}):
-        mock_pubsub_calls.return_value.publish.return_value.result.side_effect=Exception
+                                  headers={'X-Square-Signature': signature}):
+        mock_pubsub_calls.return_value.publish.return_value.result.side_effect = Exception
         with pytest.raises(InternalServerError):
             main.handle_webhook(flask.request)
 
         assert mock_pubsub_calls.return_value.publish.call_count == 1
-
 
 
 def test_insufficient_json_fields(app, mock_pubsub_calls, mock_set_env_webhook_signature_key):
@@ -210,8 +209,8 @@ def test_insufficient_json_fields(app, mock_pubsub_calls, mock_set_env_webhook_s
                                   path="/test_handle_webhook_valid",
                                   base_url="functions.googlecloud.com",
                                   json=content,
-                                  headers={'X-Square-Signature':signature}):
-        mock_pubsub_calls.return_value.publish.return_value.result.side_effect=Exception
+                                  headers={'X-Square-Signature': signature}):
+        mock_pubsub_calls.return_value.publish.return_value.result.side_effect = Exception
         with pytest.raises(BadRequest):
             main.handle_webhook(flask.request)
 
