@@ -25,6 +25,7 @@ def app():
 
 
 KEY = "abc123def456"
+SUBSCRIPTION_PATH = "projects/%s/subscriptions/test_handle_webhook_valid" % os.environ['GCP_PROJECT']
 @pytest.fixture
 def mock_setup(monkeypatch):
     monkeypatch.setenv("SQUARE_WEBHOOK_SIGNATURE_KEY", KEY)
@@ -38,18 +39,16 @@ def mock_setup(monkeypatch):
 
     # must create subscription before message is sent
     subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path(os.environ["GCP_PROJECT"],
-                                                     "test_handle_webhook_valid")
     subscriptions = subscriber.list_subscriptions("projects/%s" % os.environ["GCP_PROJECT"])
-    if subscription_path not in [x.name for x in subscriptions]:
-        subscriber.create_subscription(subscription_path, topic_name,
+    if SUBSCRIPTION_PATH not in [x.name for x in subscriptions]:
+        subscriber.create_subscription(SUBSCRIPTION_PATH, topic_name,
                                        retain_acked_messages=True)
 
     # ack all messages before the test case starts
     now = time.time()
     seconds = int(now)
     reset_ts = Timestamp(seconds=seconds, nanos=int((now-seconds) * 10**9))
-    subscriber.seek(subscription=subscription_path, time=reset_ts)
+    subscriber.seek(subscription=SUBSCRIPTION_PATH, time=reset_ts)
 
     return subscriber
 
@@ -97,8 +96,6 @@ def test_handle_webhook_valid(app, mock_setup):
         res = main.handle_webhook(flask.request)
         assert res.status == '200 OK'
 
-        subscription_path = mock_setup.subscription_path(os.environ["GCP_PROJECT"],
-                                                         "test_handle_webhook_valid")
-        response = mock_setup.pull(subscription_path, max_messages=1)
+        response = mock_setup.pull(SUBSCRIPTION_PATH, max_messages=1)
         # ensure that what we sent over the webhook is what we got over pubsub
         assert json.loads(response.received_messages[0].message.data) == content

@@ -16,7 +16,7 @@ from google.cloud import pubsub_v1
 LOGGER = logging.getLogger(__name__)
 
 # only configure stackdriver logging when running on GCP
-if os.environ.get('FUNCTION_REGION', None):
+if os.environ.get('FUNCTION_REGION', None):  # pragma: no cover
     from google.cloud import logging as cloudlogging
     LOG_CLIENT = cloudlogging.Client()
     HANDLER = LOG_CLIENT.get_default_handler()
@@ -102,4 +102,3 @@ def validate_square_signature(request):
     # Compare your generated signature with the signature included in the request
     if not hmac.compare_digest(string_signature, request.headers['X-Square-Signature']):
         raise ValueError("Square Signature could not be verified")
-    return True
