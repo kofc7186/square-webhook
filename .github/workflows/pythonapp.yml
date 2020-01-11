@@ -39,10 +39,8 @@ jobs:
         run: |
           pytest --cov=. --cov-report term-missing test_unit.py
       - name: Run integration tests
-        env:
         run: |
           pytest -s -o log_cli=True --log-level DEBUG test_integration.py
       - name: Run integration tests with coverage
-        env:
         run: |
           pytest --cov=. --cov-report term-missing test_integration.py
