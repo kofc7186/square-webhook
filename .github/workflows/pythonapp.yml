@@ -22,6 +22,9 @@ jobs:
         run: |
           python -m pip install -q --upgrade pip
           pip install -r requirements.txt
+          echo "::set-env name=GCP_PROJECT::square-webhook-123456"
+          echo "::set-env name=PUBSUB_EMULATOR_HOST::127.0.0.1:${{ job.services.pubsub.ports['8085'] }}"
+          echo "::set-env name=PUBSUB_PROJECT_ID::square-webhook-123456"
       - name: Lint with flake8
         run: |
           pip install -q flake8 pytest pytest-cov
@@ -30,26 +33,16 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run unit tests
-        env:
-          GCP_PROJECT: square-webhook-123456
         run: |
           pytest -s -o log_cli=True test_unit.py
       - name: Run unit tests with coverage
-        env:
-          GCP_PROJECT: square-webhook-123456
         run: |
           pytest --cov=. --cov-report term-missing test_unit.py
       - name: Run integration tests
         env:
-          PUBSUB_EMULATOR_HOST: 127.0.0.1:${{ job.services.pubsub.ports['8085'] }}
-          PUBSUB_PROJECT_ID: square-webhook-123456
-          GCP_PROJECT: square-webhook-123456
         run: |
           pytest -s -o log_cli=True --log-level DEBUG test_integration.py
       - name: Run integration tests with coverage
         env:
-          PUBSUB_EMULATOR_HOST: 127.0.0.1:${{ job.services.pubsub.ports['8085'] }}
-          PUBSUB_PROJECT_ID: square-webhook-123456
-          GCP_PROJECT: square-webhook-123456
         run: |
           pytest --cov=. --cov-report term-missing test_integration.py

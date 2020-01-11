@@ -1,11 +1,12 @@
+""" Integration tests for square-webhook cloud function """
 # pylint: disable=redefined-outer-name,unused-argument,no-member
 
 import base64
+from hashlib import sha1
 import hmac
 import json
 import os
 import time
-from hashlib import sha1
 
 import flask
 import pytest
@@ -18,16 +19,21 @@ from werkzeug.exceptions import InternalServerError
 
 import main
 
-# Create a fake "app" for generating test request contexts.
+
 @pytest.fixture(scope="module")
 def app():
+    """ Creates a fake Flask app for generating test request contents."""
     return flask.Flask(__name__)
 
 
 KEY = "abc123def456"
-SUBSCRIPTION_PATH = "projects/%s/subscriptions/test_handle_webhook_valid" % os.environ['GCP_PROJECT']
+SUBSCRIPTION_PATH = "projects/%s/subscriptions/test_handle_webhook_valid" % \
+                    os.environ['GCP_PROJECT']
+
+
 @pytest.fixture
 def mock_setup(monkeypatch):
+    """ Pytest fixture to set up relevant mocks for pubsub client """
     monkeypatch.setenv("SQUARE_WEBHOOK_SIGNATURE_KEY", KEY)
     monkeypatch.setenv("FUNCTION_NAME", "test_handle_webhook_valid")
 
@@ -54,6 +60,7 @@ def mock_setup(monkeypatch):
 
 
 def test_handle_webhook_publish_timeout(app, mocker, mock_setup):
+    """ test that if the publish call to pubsub times out, we send a non-200 response """
     base_url = "functions.googlecloud.com"
     function_name = "/" + os.environ["FUNCTION_NAME"]
     path = "/test_handle_webhook_valid"
@@ -77,6 +84,7 @@ def test_handle_webhook_publish_timeout(app, mocker, mock_setup):
 
 
 def test_handle_webhook_valid(app, mock_setup):
+    """ tests that a valid message is successfully processed by the function """
     base_url = "functions.googlecloud.com"
     function_name = "/" + os.environ["FUNCTION_NAME"]
     path = "/test_handle_webhook_valid"
