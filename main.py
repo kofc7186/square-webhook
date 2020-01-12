@@ -40,19 +40,19 @@ def validate_message(request):
     if content_type != 'application/json':
         raise UnsupportedMediaType(description="Unknown content type: {}".format(content_type))
 
+    #parse the content as JSON
     request_json = request.get_json(silent=False)
+    if not request_json or request_json.keys() < {"merchant_id",
+                                                  "location_id",
+                                                  "event_type",
+                                                  "entity_id"}:
+        raise BadRequest(description="JSON is invalid, or missing required property")
 
     # ensure the request is signed as coming from Square
     try:
         validate_square_signature(request)
     except ValueError:
         raise BadRequest(description="Signature could not be validated")
-
-    if not request_json or request_json.keys() < {"merchant_id",
-                                                  "location_id",
-                                                  "event_type",
-                                                  "entity_id"}:
-        raise BadRequest(description="JSON is invalid, or missing required property")
 
     return request_json
 
@@ -66,13 +66,13 @@ def handle_webhook(request):
 
     if 'Square-Initial-Delivery-Timestamp' in request.headers:
         LOGGER.debug("Delivery time of initial notification: %s",
-                     request.headers['Square-Initial-Delivery-Timestamp'])
+                     request.headers.get('Square-Initial-Delivery-Timestamp'))
 
     if 'Square-Retry-Number' in request.headers:
         LOGGER.debug("Square has resent this notification %s times; "
                      "reason given for the last failure is '%s'",
-                     request.headers['Square-Retry-Number'],
-                     request.headers['Square-Retry-Reason'])
+                     request.headers.get('Square-Retry-Number'),
+                     request.headers.get('Square-Retry-Reason'))
 
     # put message on topic to upsert order
     publisher = pubsub_v1.PublisherClient()
