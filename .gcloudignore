@@ -5,5 +5,7 @@
 __pycache__/
 .coverage
 .gitignore
-main_test.py
+test_unit.py
+test_integration.py
 LICENSE
+terraform.tfstate
