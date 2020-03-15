@@ -17,8 +17,8 @@ jobs:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: 'init'
         env:
-          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
+          TF_GOOGLE_CREDENTIALS_CONTENTS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform plan'
@@ -27,6 +27,6 @@ jobs:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: 'plan'
         env:
-          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
+          TF_GOOGLE_CREDENTIALS_CONTENTS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
