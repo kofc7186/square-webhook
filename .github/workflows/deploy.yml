@@ -11,6 +11,10 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@master
 
+      - name: 'Write Google Creds to JSON file'
+        run: |
+          echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > credentials.json
+
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
         with:
@@ -18,7 +22,7 @@ jobs:
           tf_actions_subcommand: 'init'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          TF_VAR_GOOGLE_CREDENTIALS_CONTENTS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: credentials.json
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform plan'
@@ -28,5 +32,5 @@ jobs:
           tf_actions_subcommand: 'plan'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          TF_VAR_GOOGLE_CREDENTIALS_CONTENTS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: credentials.json
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
