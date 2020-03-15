@@ -30,3 +30,13 @@ jobs:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
           TF_VAR_GOOGLE_CREDENTIALS_CONTENT: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
+
+      - name: 'Terraform apply'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: 0.12.13
+          tf_actions_subcommand: 'apply'
+        env:
+          GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
+          TF_VAR_GOOGLE_CREDENTIALS_CONTENT: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}

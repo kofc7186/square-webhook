@@ -26,6 +26,6 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   member = "allUsers"
 }
 
-resource "google_pubsub_topic" "payment" {
+resource "google_pubsub_topic" "orders" {
   name = "orders"
 }
