@@ -17,9 +17,9 @@ resource "google_cloudfunctions_function" "handle_webhook" {
 
 # IAM entry for all users to invoke the function
 resource "google_cloudfunctions_function_iam_member" "invoker" {
-  project        = google_cloudfunctions_function.function.project
-  region         = google_cloudfunctions_function.function.region
-  cloud_function = google_cloudfunctions_function.function.name
+  project        = google_cloudfunctions_function.handle_webhook.project
+  region         = google_cloudfunctions_function.handle_webhook.region
+  cloud_function = google_cloudfunctions_function.handle_webhook.name
 
   role   = "roles/cloudfunctions.invoker"
   member = "allUsers"
