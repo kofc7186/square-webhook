@@ -25,7 +25,7 @@ jobs:
         uses: hashicorp/terraform-github-actions@master
         with:
           tf_actions_version: 0.12.13
-          tf_actions_subcommand: 'plam'
+          tf_actions_subcommand: 'plan'
         env:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
