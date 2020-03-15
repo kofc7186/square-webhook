@@ -8,8 +8,6 @@ resource "google_cloudfunctions_function" "handle_webhook" {
     description = "Processes webhooks from Square"
     runtime = "python37"
 
-    region = "us-central1"
-
     available_memory_mb = 128
     trigger_http = true
     entry_point = "handle_webhook"
