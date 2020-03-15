@@ -1,11 +1,14 @@
 provider "google" {
     credentials = base64decode(var.GOOGLE_CREDENTIALS_CONTENT)
+    region = "us-central1"
 }
 
 resource "google_cloudfunctions_function" "handle_webhook" {
     name = "handle_webhook"
     description = "Processes webhooks from Square"
     runtime = "python37"
+
+    region = "us-central1"
 
     available_memory_mb = 128
     trigger_http = true
