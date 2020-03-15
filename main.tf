@@ -27,13 +27,13 @@ resource "google_storage_bucket" "bucket" {
 
 data "archive_file" "http_trigger" {
   type        = "zip"
-  output_path = "${path.module}/files/http_trigger.zip"
+  output_path = "${path.module}/http_trigger.zip"
   source {
-    content  = "${file("${path.module}/files/main.py")}"
+    content  = "${file("${path.module}/main.py")}"
     filename = "main.py"
   }
   source {
-    content  = "${file("${path.module}/files/requirements.txt")}"
+    content  = "${file("${path.module}/requirements.txt")}"
     filename = "requirements.txt"
   }
 }
