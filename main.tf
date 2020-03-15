@@ -1,5 +1,5 @@
 provider "google" {
-    credentials = var.GOOGLE_CREDENTIALS_CONTENT
+    credentials = base64decode(var.GOOGLE_CREDENTIALS_CONTENT)
 }
 
 resource "google_cloudfunctions_function" "handle_webhook" {

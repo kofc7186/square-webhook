@@ -11,10 +11,6 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@master
 
-      - name: 'Prepare GCP Credentials'
-        run: |
-          echo "::set-env name=TF_VAR_GOOGLE_CREDENTIALS_CONTENT::$(echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}' | base64 -d)"
-
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
         with:
@@ -22,6 +18,7 @@ jobs:
           tf_actions_subcommand: 'init'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
+          TF_VAR_GOOGLE_CREDENTIALS_CONTENT: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform plan'
@@ -31,4 +28,5 @@ jobs:
           tf_actions_subcommand: 'plan'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
+          TF_VAR_GOOGLE_CREDENTIALS_CONTENT: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
