@@ -13,7 +13,7 @@ jobs:
 
       - name: 'Prepare GCP Credentials'
         run: |
-          echo "::set-env name=GOOGLE_CREDENTIALS::$(echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}' | base64 -d)"
+          echo "::set-env name=TF_VAR_GOOGLE_CREDENTIALS_CONTENT::$(echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}' | base64 -d)"
 
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
