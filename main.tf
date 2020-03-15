@@ -22,7 +22,7 @@ resource "google_cloudfunctions_function" "handle_webhook" {
 }
 
 resource "google_storage_bucket" "bucket" {
-  name = "cloudfunction-deploy-test1"
+  name = "cloudfunction-deploy-test2"
 }
 
 data "archive_file" "http_trigger" {
