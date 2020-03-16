@@ -26,7 +26,7 @@ jobs:
           args: '-reconfigure'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_CREDENTIALS: ${{ steps.write_file.outputs.filePath }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.write_file.outputs.filePath }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform plan'
