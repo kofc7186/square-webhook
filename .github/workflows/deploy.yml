@@ -11,12 +11,9 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@master
 
-      - name: 'Extract Service Account Credentials'
-        id: write_file
-        uses: timheuer/base64-to-file@v1.0.3
-        with:
-          fileName: 'serviceaccount.json'
-          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      - name: 'Export Service Credentials'
+        run: |
+          echo "::set-env name=SERVICE_CREDENTIALS::$(echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 -d | jq -c .)"
 
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
@@ -26,7 +23,7 @@ jobs:
           args: '-reconfigure'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.write_file.outputs.filePath }}
+          GOOGLE_CREDENTIALS: ${{ env.SERVICE_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform plan'
@@ -36,7 +33,7 @@ jobs:
           tf_actions_subcommand: 'plan'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.write_file.outputs.filePath }}
+          GOOGLE_CREDENTIALS: ${{ env.SERVICE_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform apply'
@@ -46,5 +43,5 @@ jobs:
           tf_actions_subcommand: 'apply'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.write_file.outputs.filePath }}
+          GOOGLE_CREDENTIALS: ${{ env.SERVICE_CREDENTIALS }}
           TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
