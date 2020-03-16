@@ -11,9 +11,11 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@master
 
-      - name: 'Export Service Credentials'
+      - name: 'Export Environment Variables'
         run: |
-          echo "::set-env name=SERVICE_CREDENTIALS::$(echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 -d | jq -c .)"
+          echo "::set-env name=GOOGLE_CREDENTIALS::$(echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 -d | jq -c .)"
+          echo "::set-env name=GCLOUD_PROJECT::${{ secrets.GCLOUD_PROJECT_ID }}"
+          echo "::set-env name=TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY::${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}"
 
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
@@ -21,27 +23,15 @@ jobs:
           tf_actions_version: 0.12.23
           tf_actions_subcommand: 'init'
           args: '-reconfigure'
-        env:
-          GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_CREDENTIALS: ${{ env.SERVICE_CREDENTIALS }}
-          TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform plan'
         uses: hashicorp/terraform-github-actions@master
         with:
           tf_actions_version: 0.12.23
           tf_actions_subcommand: 'plan'
-        env:
-          GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_CREDENTIALS: ${{ env.SERVICE_CREDENTIALS }}
-          TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
 
       - name: 'Terraform apply'
         uses: hashicorp/terraform-github-actions@master
         with:
           tf_actions_version: 0.12.23
           tf_actions_subcommand: 'apply'
-        env:
-          GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
-          GOOGLE_CREDENTIALS: ${{ env.SERVICE_CREDENTIALS }}
-          TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
