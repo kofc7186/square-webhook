@@ -21,7 +21,7 @@ jobs:
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
         with:
-          tf_actions_version: 0.12.13
+          tf_actions_version: 0.12.23
           tf_actions_subcommand: 'init'
           args: '-reconfigure'
         env:
@@ -32,7 +32,7 @@ jobs:
       - name: 'Terraform plan'
         uses: hashicorp/terraform-github-actions@master
         with:
-          tf_actions_version: 0.12.13
+          tf_actions_version: 0.12.23
           tf_actions_subcommand: 'plan'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
@@ -42,7 +42,7 @@ jobs:
       - name: 'Terraform apply'
         uses: hashicorp/terraform-github-actions@master
         with:
-          tf_actions_version: 0.12.13
+          tf_actions_version: 0.12.23
           tf_actions_subcommand: 'apply'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
