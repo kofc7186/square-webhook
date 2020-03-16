@@ -23,7 +23,7 @@ jobs:
         with:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: 'init'
-          args: '-backend-config "credentials=${{ steps.write_file.outputs.filePath }}"'
+          args: '-reconfigure -backend-config "credentials=${{ steps.write_file.outputs.filePath }}"'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.write_file.outputs.filePath }}
