@@ -7,7 +7,6 @@ terraform {
     backend "gcs" {
         bucket = "kofc7186-fishfry"
         prefix = "square-webhook-tfstate"
-        credentials = base64decode(var.GOOGLE_CREDENTIALS_CONTENT)
     }
 }
 
