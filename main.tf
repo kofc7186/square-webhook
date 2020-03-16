@@ -3,6 +3,14 @@ provider "google" {
     region = "us-central1"
 }
 
+terraform {
+    backend "gcs" {
+        bucket = "kofc7186-fishfry"
+        prefix = "square-webhook-tfstate"
+        credentials = base64decode(var.GOOGLE_CREDENTIALS_CONTENT)
+    }
+}
+
 resource "google_cloudfunctions_function" "handle_webhook" {
     name = "handle_webhook"
     description = "Processes webhooks from Square"
@@ -13,21 +21,21 @@ resource "google_cloudfunctions_function" "handle_webhook" {
     timeout = 3
     entry_point = "handle_webhook"
 
-    source_archive_bucket = "${google_storage_bucket.bucket.name}"
-    source_archive_object = "${google_storage_bucket_object.archive.name}"
+    source_archive_bucket = google_storage_bucket.kofc7186-fishfry.name
+    source_archive_object = google_storage_bucket_object.square-webhook-cloudfunction.name
 
     environment_variables = {
         SQUARE_WEBHOOK_SIGNATURE_KEY = var.SQUARE_WEBHOOK_SIGNATURE_KEY
     }
 }
 
-resource "google_storage_bucket" "bucket" {
-  name = "cloudfunction-deploy-test2"
+resource "google_storage_bucket" "kofc7186-fishfry" {
+  name = "kofc7186-fishfry"
 }
 
-data "archive_file" "http_trigger" {
+data "archive_file" "square-webhook-cloudfunction" {
   type        = "zip"
-  output_path = "${path.module}/http_trigger.zip"
+  output_path = "${path.module}/square-webhook-cloudfunction.zip"
   source {
     content  = "${file("${path.module}/main.py")}"
     filename = "main.py"
@@ -39,10 +47,10 @@ data "archive_file" "http_trigger" {
 }
 
 resource "google_storage_bucket_object" "archive" {
-  name   = "http_trigger.zip"
-  bucket = "${google_storage_bucket.bucket.name}"
-  source = "${path.module}/http_trigger.zip"
-  depends_on = ["data.archive_file.http_trigger"]
+  name   = "square-webhook-cloudfunction.zip"
+  bucket = google_storage_bucket.bucket.name
+  source = "${path.module}/square-webhook-cloudfunction.zip"
+  depends_on = [data.archive_file.square-webhook-cloudfunction]
 }
 
 # IAM entry for all users to invoke the function
