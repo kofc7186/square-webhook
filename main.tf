@@ -1,11 +1,12 @@
 provider "google" {
     region = "us-central1"
+    project = "serverless-fish-fry"
 }
 
 terraform {
     backend "gcs" {
         bucket = "kofc7186-fishfry"
-        prefix = "square-webhook-tfstate"
+        prefix = "square-webhook/tfstate"
     }
 }
 
@@ -19,7 +20,7 @@ resource "google_cloudfunctions_function" "handle_webhook" {
     timeout = 3
     entry_point = "handle_webhook"
 
-    source_archive_bucket = google_storage_bucket.kofc7186-fishfry.name
+    source_archive_bucket = "kofc7186-fishfry"
     source_archive_object = google_storage_bucket_object.square-webhook-cloudfunction-archive.name
 
     environment_variables = {
@@ -27,13 +28,9 @@ resource "google_cloudfunctions_function" "handle_webhook" {
     }
 }
 
-resource "google_storage_bucket" "kofc7186-fishfry" {
-  name = "kofc7186-fishfry"
-}
-
 data "archive_file" "square-webhook-cloudfunction" {
   type        = "zip"
-  output_path = "${path.module}/square-webhook-cloudfunction.zip"
+  output_path = "${path.module}/cloudfunction_src.zip"
   source {
     content  = "${file("${path.module}/main.py")}"
     filename = "main.py"
@@ -45,9 +42,9 @@ data "archive_file" "square-webhook-cloudfunction" {
 }
 
 resource "google_storage_bucket_object" "square-webhook-cloudfunction-archive" {
-  name   = "square-webhook-cloudfunction.zip"
-  bucket = google_storage_bucket.kofc7186-fishfry.name
-  source = "${path.module}/square-webhook-cloudfunction.zip"
+  name   = "square-webhook/src/cloudfunction_src.zip"
+  bucket = "kofc7186-fishfry"
+  source = "${path.module}/cloudfunction_src.zip"
   depends_on = [data.archive_file.square-webhook-cloudfunction]
 }
 
