@@ -20,7 +20,7 @@ resource "google_cloudfunctions_function" "handle_webhook" {
     entry_point = "handle_webhook"
 
     source_archive_bucket = google_storage_bucket.kofc7186-fishfry.name
-    source_archive_object = google_storage_bucket_object.square-webhook-cloudfunction.name
+    source_archive_object = google_storage_bucket_object.square-webhook-cloudfunction-archive.name
 
     environment_variables = {
         SQUARE_WEBHOOK_SIGNATURE_KEY = var.SQUARE_WEBHOOK_SIGNATURE_KEY
@@ -44,9 +44,9 @@ data "archive_file" "square-webhook-cloudfunction" {
   }
 }
 
-resource "google_storage_bucket_object" "archive" {
+resource "google_storage_bucket_object" "square-webhook-cloudfunction-archive" {
   name   = "square-webhook-cloudfunction.zip"
-  bucket = google_storage_bucket.bucket.name
+  bucket = google_storage_bucket.kofc7186-fishfry.name
   source = "${path.module}/square-webhook-cloudfunction.zip"
   depends_on = [data.archive_file.square-webhook-cloudfunction]
 }
