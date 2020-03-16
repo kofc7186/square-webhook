@@ -17,6 +17,9 @@ jobs:
         with:
           fileName: 'serviceaccount.json'
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      
+      - run: |
+        cat ${{ steps.write_file.outputs.filePath }}
 
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
