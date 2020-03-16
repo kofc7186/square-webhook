@@ -1,5 +1,5 @@
 provider "google" {
-    credentials = base64decode(var.GOOGLE_CREDENTIALS_CONTENT)
+    credentials = "serviceaccount.json"
     region = "us-central1"
 }
 
@@ -7,6 +7,7 @@ terraform {
     backend "gcs" {
         bucket = "kofc7186-fishfry"
         prefix = "square-webhook-tfstate"
+        credentials = "serviceaccount.json"
     }
 }
 
