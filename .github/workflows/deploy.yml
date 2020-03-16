@@ -16,6 +16,7 @@ jobs:
         with:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: 'init'
+          args: '-backend-config "credentials=$(echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 -d | jq -c .)"'
         env:
           GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT_ID }}
           TF_VAR_GOOGLE_CREDENTIALS_CONTENT: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
