@@ -6,16 +6,15 @@ on:
       - master
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
-      - name: 'Checkout'
-        uses: actions/checkout@master
+      - uses: actions/checkout@v2.3.4
 
       - name: 'Export Environment Variables'
         run: |
-          echo "::set-env name=GOOGLE_CREDENTIALS::$(echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 -d | jq -c .)"
-          echo "::set-env name=GCLOUD_PROJECT::${{ secrets.GCLOUD_PROJECT_ID }}"
-          echo "::set-env name=TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY::${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}"
+          echo "GOOGLE_CREDENTIALS=$(echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 -d | jq -c .)" >> $GITHUB_ENV
+          echo "GCLOUD_PROJECT=${{ secrets.GCLOUD_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "TF_VAR_SQUARE_WEBHOOK_SIGNATURE_KEY=${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}" >> $GITHUB_ENV
 
       - name: 'Terraform init'
         uses: hashicorp/terraform-github-actions@master
