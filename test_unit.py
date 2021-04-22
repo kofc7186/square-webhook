@@ -23,6 +23,8 @@ def app():
 
 
 KEY = "abc123def456"
+
+
 @pytest.fixture
 def mock_set_env_webhook_signature_key(monkeypatch):
     """ Pytest fixture that sets the environment variables required to run the function. """
@@ -33,7 +35,23 @@ def mock_set_env_webhook_signature_key(monkeypatch):
 def test_handle_webhook_empty_webhook_key(app, monkeypatch):
     """ Ensures that if the webhook key is not available to the function, the function fails. """
     monkeypatch.delenv("SQUARE_WEBHOOK_SIGNATURE_KEY", raising=False)
-    with app.test_request_context(method='POST', json={}):
+
+    base_url = "functions.googlecloud.com"
+    function_name = "/test_handle_webhook_valid"
+    path = "/test_handle_webhook_valid"
+    content = {
+        "merchant_id": "merchant",
+        "location_id": "location",
+        "event_type": "event",
+        "entity_id": "entity"
+    }
+    to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
+    signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
+    with app.test_request_context(method='POST',
+                                  path="/test_handle_webhook_valid",
+                                  base_url="functions.googlecloud.com",
+                                  json=content,
+                                  headers={'X-Square-Signature': signature}):
         with pytest.raises(KeyError):
             main.handle_webhook(flask.request)
 
