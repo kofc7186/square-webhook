@@ -6,7 +6,7 @@ on:
       - master
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
 
@@ -40,4 +40,4 @@ jobs:
           PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         with:
-          args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python37 --trigger-http --allow-unauthenticated --memory=128MB
+          args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python39 --trigger-http --allow-unauthenticated --memory=128MB
