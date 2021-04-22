@@ -23,6 +23,8 @@ def app():
 
 
 KEY = "abc123def456"
+
+
 @pytest.fixture
 def mock_set_env_webhook_signature_key(monkeypatch):
     """ Pytest fixture that sets the environment variables required to run the function. """
