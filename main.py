@@ -40,7 +40,7 @@ def validate_message(request):
     if content_type != 'application/json':
         raise UnsupportedMediaType(description="Unknown content type: {}".format(content_type))
 
-    #parse the content as JSON
+    # parse the content as JSON
     request_json = request.get_json(silent=False)
     if not request_json or request_json.keys() < {"merchant_id",
                                                   "location_id",
