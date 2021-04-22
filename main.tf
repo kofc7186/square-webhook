@@ -10,10 +10,26 @@ terraform {
     }
 }
 
+resource "google_project_service" "cf" {
+    project = var.project
+    service = "cloudfunctions.googleapis.com"
+
+    disable_dependent_services = true
+    disable_on_destroy         = false
+}
+
+resource "google_project_service" "cb" {
+    project = var.project
+    service = "cloudbuild.googleapis.com"
+
+    disable_dependent_services = true
+    disable_on_destroy         = false
+}
+
 resource "google_cloudfunctions_function" "handle_webhook" {
     name = "handle_webhook"
     description = "Processes webhooks from Square"
-    runtime = "python37"
+    runtime = "python39"
 
     available_memory_mb = 128
     trigger_http = true
