@@ -6,7 +6,7 @@ on:
       - master
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     services:
       pubsub:
         image: knarz/pubsub-emulator
@@ -14,17 +14,17 @@ jobs:
           - 8085/tcp
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python -m pip install -q --upgrade pip
           pip install -r requirements.txt
-          echo "::set-env name=GCP_PROJECT::square-webhook-123456"
-          echo "::set-env name=PUBSUB_EMULATOR_HOST::127.0.0.1:${{ job.services.pubsub.ports['8085'] }}"
-          echo "::set-env name=PUBSUB_PROJECT_ID::square-webhook-123456"
+          echo "GCP_PROJECT=square-webhook-123456" >> $GITHUB_ENV
+          echo "PUBSUB_EMULATOR_HOST=127.0.0.1:${{ job.services.pubsub.ports['8085'] }}" >> $GITHUB_ENV
+          echo "PUBSUB_PROJECT_ID=square-webhook-123456" >> $GITHUB_ENV
       - name: Lint with flake8
         run: |
           pip install -q flake8 pytest pytest-cov
