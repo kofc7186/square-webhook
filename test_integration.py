@@ -39,7 +39,7 @@ def mock_setup(monkeypatch):
 
     client = pubsub_v1.PublisherClient()
     topic_name = client.topic_path(os.environ["GCP_PROJECT"], "orders")
-    topics = client.list_topics("projects/%s" % os.environ["GCP_PROJECT"])
+    topics = client.list_topics(request={"project": "projects/%s" % os.environ["GCP_PROJECT"]})
     if topic_name not in [x.name for x in topics]:
         client.create_topic(topic_name)
 
