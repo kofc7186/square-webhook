@@ -38,7 +38,7 @@ def mock_setup(monkeypatch):
     monkeypatch.setenv("FUNCTION_NAME", "test_handle_webhook_valid")
 
     client = pubsub_v1.PublisherClient()
-    topic_name = client.topic_path(os.environ["GCP_PROJECT"], "orders")
+    topic_name = "projects/%s/topics/%s" % (os.environ["GCP_PROJECT"], "orders")
     topics = client.list_topics(request={"project": "projects/%s" % os.environ["GCP_PROJECT"]})
     if topic_name not in [x.name for x in topics]:
         client.create_topic(topic_name)
