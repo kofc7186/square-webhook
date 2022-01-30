@@ -38,7 +38,7 @@ def mock_setup(monkeypatch):
     monkeypatch.setenv("FUNCTION_NAME", "test_handle_webhook_valid")
 
     client = pubsub_v1.PublisherClient()
-    topic_name = client.topic_path(os.environ["GCP_PROJECT"], "orders")
+    topic_name = client.topic_path(os.environ["GCP_PROJECT"], "square.order.created")
     topics = client.list_topics(request={"project": "projects/%s" % os.environ["GCP_PROJECT"]})
     if topic_name not in [x.name for x in topics]:
         client.create_topic(request={"name": topic_name})
@@ -65,10 +65,10 @@ def test_handle_webhook_publish_timeout(app, mocker, mock_setup):
     function_name = "/" + os.environ["FUNCTION_NAME"]
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
@@ -83,16 +83,40 @@ def test_handle_webhook_publish_timeout(app, mocker, mock_setup):
             main.handle_webhook(flask.request)
 
 
+def test_handle_webhook_without_topic(app, mocker, mock_setup):
+    """ test that if we receive a webhook for an event without a corresponding pubsub topic
+        we fail elegantly
+    """
+    base_url = "functions.googlecloud.com"
+    function_name = "/" + os.environ["FUNCTION_NAME"]
+    path = "/test_handle_webhook_valid"
+    content = {
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "bogus.event",
+        "event_id": "uuid"
+    }
+    to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
+    signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
+    with app.test_request_context(method='POST',
+                                  path=path,
+                                  base_url=base_url,
+                                  json=content,
+                                  headers={"X-Square-Signature": signature}):
+        with pytest.raises(InternalServerError):
+            main.handle_webhook(flask.request)
+
+
 def test_handle_webhook_valid(app, mock_setup):
     """ tests that a valid message is successfully processed by the function """
     base_url = "functions.googlecloud.com"
     function_name = "/" + os.environ["FUNCTION_NAME"]
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
