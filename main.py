@@ -43,9 +43,9 @@ def validate_message(request):
     # parse the content as JSON
     request_json = request.get_json(silent=False)
     if not request_json or request_json.keys() < {"merchant_id",
-                                                  "location_id",
-                                                  "event_type",
-                                                  "entity_id"}:
+                                                  "event_id",
+                                                  "data",
+                                                  "type"}:
         raise BadRequest(description="JSON is invalid, or missing required property")
 
     # ensure the request is signed as coming from Square
@@ -76,7 +76,7 @@ def handle_webhook(request):
 
     # put message on topic to upsert order
     publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(os.environ["GCP_PROJECT"], "orders")
+    topic_path = publisher.topic_path(os.environ["GCP_PROJECT"], "square.{}".format(request_json['type']))
     future = publisher.publish(topic_path, data=json.dumps(request_json).encode('utf-8'))
 
     # this will block until the publish is complete;
@@ -100,18 +100,16 @@ def validate_square_signature(request):
     """
 
     key = os.environ['SQUARE_WEBHOOK_SIGNATURE_KEY']
+    sig_from_header = request.headers['X-Square-Signature']
     # cloud functions does not set flaskRequest.url with the correct values so we have to munge it
     url = request.url.replace("http", "https").rstrip('/') + '/' + os.environ['FUNCTION_NAME']
 
-    string_to_sign = url.encode() + request.data
+    string_to_sign = url.encode('utf-8') + request.data
 
     # Generate the HMAC-SHA1 signature of the string, signed with your webhook signature key
     string_signature = str(base64.b64encode(hmac.new(key.encode(), string_to_sign, sha1).digest()),
-                           'utf-8')
-
-    # Remove the trailing newline from the generated signature
-    string_signature = string_signature.rstrip('\n')
+                           'utf-8').rstrip('\n')
 
     # Compare your generated signature with the signature included in the request
-    if not hmac.compare_digest(string_signature, request.headers['X-Square-Signature']):
+    if not hmac.compare_digest(string_signature, sig_from_header):
         raise ValueError("Square Signature could not be verified")

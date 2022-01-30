@@ -40,10 +40,10 @@ def test_handle_webhook_empty_webhook_key(app, monkeypatch):
     function_name = "/test_handle_webhook_valid"
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
@@ -70,10 +70,10 @@ def test_handle_webhook_invalid_signature(app, mock_set_env_webhook_signature_ke
                                   path="/test_handle_webhook_valid",
                                   base_url="functions.googlecloud.com",
                                   json={
-                                      "merchant_id": "merchant",
-                                      "location_id": "location",
-                                      "event_type": "event",
-                                      "entity_id": "entity"},
+                                      "merchant_id": "merchantID",
+                                      "data": "data",
+                                      "type": "order.created",
+                                      "event_id": "uuid"},
                                   headers={"X-Square-Signature": "NOT_A_VALID_SIGNATURE"}):
         with pytest.raises(BadRequest):
             main.handle_webhook(flask.request)
@@ -96,10 +96,10 @@ def test_handle_webhook_send_non_json(app):
 def test_handle_webhook_valid_json_no_signature(app, mock_set_env_webhook_signature_key):
     """ Ensures that if there is JSON content but no signature, the message is rejected """
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     with app.test_request_context(method='POST', json=content):
         with pytest.raises(KeyError):
@@ -120,10 +120,10 @@ def test_good_message(app, mock_pubsub_calls, mock_set_env_webhook_signature_key
     function_name = "/test_handle_webhook_valid"
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
@@ -131,7 +131,7 @@ def test_good_message(app, mock_pubsub_calls, mock_set_env_webhook_signature_key
                                   path="/test_handle_webhook_valid",
                                   base_url="functions.googlecloud.com",
                                   json=content,
-                                  headers={'X-Square-Signature': signature}):
+                                  headers={'x-square-signature': signature}):
         response = main.handle_webhook(flask.request)
 
     assert response.status_code == 200
@@ -145,10 +145,10 @@ def test_good_message_retry(app, mock_pubsub_calls, mock_set_env_webhook_signatu
     function_name = "/test_handle_webhook_valid"
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
@@ -178,10 +178,10 @@ def test_good_message_publish_timeout(app, mock_pubsub_calls, mock_set_env_webho
     function_name = "/test_handle_webhook_valid"
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
@@ -207,10 +207,10 @@ def test_good_message_publish_unknown_error(app, mock_pubsub_calls,
     function_name = "/test_handle_webhook_valid"
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
-        "entity_id": "entity"
+        "merchant_id": "merchantID",
+        "data": "data",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
@@ -234,9 +234,9 @@ def test_insufficient_json_fields(app, mock_pubsub_calls, mock_set_env_webhook_s
     function_name = "/test_handle_webhook_valid"
     path = "/test_handle_webhook_valid"
     content = {
-        "merchant_id": "merchant",
-        "location_id": "location",
-        "event_type": "event",
+        "merchant_id": "merchantID",
+        "type": "order.created",
+        "event_id": "uuid"
     }
     to_sign = "://" + base_url + function_name + path + json.dumps(content, sort_keys=True)
     signature = base64.b64encode(hmac.new(KEY.encode(), to_sign.encode(), sha1).digest())
