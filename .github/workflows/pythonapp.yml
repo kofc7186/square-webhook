@@ -4,6 +4,8 @@ on:
   push:
     branches-ignore:
       - master
+  pull-request:
+    branches: [ master ]
 jobs:
   build:
     runs-on: ubuntu-18.04
