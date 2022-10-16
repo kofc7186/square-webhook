@@ -15,7 +15,7 @@ jobs:
         ports:
           - 8085/tcp
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.1.0
       - name: Set up Python 3.9
         uses: actions/setup-python@v4.3.0
         with:
