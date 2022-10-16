@@ -1,4 +1,4 @@
 flask==2.2.2
-google-cloud-logging==2.7.0
-google-cloud-pubsub==2.13.7
-pytest-mock==3.9.0
+google-cloud-logging==3.2.5
+google-cloud-pubsub==2.13.10
+pytest-mock==3.10.0
