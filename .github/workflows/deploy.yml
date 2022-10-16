@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
 
-      - name: Set up gcloud SDK
+      - name: Set up auth
         uses: google-github-actions/auth@c4799db9111fba4461e9f9da8732e5057b394f72 # v0.8.3
         with:
           credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
@@ -20,12 +20,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
 
-      - name: Export environment variables to yaml file
-        env:
-          SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}
-        run: |
-          echo "SQUARE_WEBHOOK_SIGNATURE_KEY: ${SQUARE_WEBHOOK_SIGNATURE_KEY}" > .env.yaml
-
       - name: Create topic for pubsub
         # if topic already exists this call will fail but that is OK
         continue-on-error: true
@@ -34,4 +28,5 @@ jobs:
 
       - name: Deploy function with an HTTP trigger
         run: |
+          echo "SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY }}" > .env.yaml
           gcloud functions deploy handle_webhook --env-vars-file .env.yaml --runtime python39 --trigger-http --allow-unauthenticated --memory=128MB
