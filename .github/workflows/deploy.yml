@@ -3,20 +3,22 @@ name: Deploy to GCP
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   deploy:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
 
       - name: Set up gcloud SDK
-        uses: actions-hub/gcloud@master
-        env:
-          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
-          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        uses: google-github-actions/auth@c4799db9111fba4461e9f9da8732e5057b394f72 # v0.8.3
         with:
-          args: components update
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      - name: Set up gcloud SDK
+        uses: google-github-actions/setup-gcloud@ee9693ff89cdf73862b8a13988f6a71070e8fc58 # v0.6.2
+        with:
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
 
       - name: Export environment variables to yaml file
         env:
@@ -27,17 +29,9 @@ jobs:
       - name: Create topic for pubsub
         # if topic already exists this call will fail but that is OK
         continue-on-error: true
-        uses: actions-hub/gcloud@master
-        env:
-          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
-          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        with:
-          args: pubsub topics create projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
+        run: |
+          gcloud pubsub topics create projects/${{ secrets.GCLOUD_PROJECT_ID }}/topics/orders
 
       - name: Deploy function with an HTTP trigger
-        uses: actions-hub/gcloud@master
-        env:
-          PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
-          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        with:
-          args: functions deploy handle_webhook --env-vars-file .env.yaml --runtime python39 --trigger-http --allow-unauthenticated --memory=128MB
+        run: |
+          gcloud functions deploy handle_webhook --env-vars-file .env.yaml --runtime python39 --trigger-http --allow-unauthenticated --memory=128MB
